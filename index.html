@@ -57,10 +57,9 @@
 
       mv.addEventListener("load", () => {
         sceneReady = true;
-        console.log("model loaded");
       });
 
-      async function togglePart(targetName) {
+      async function togglePart(target) {
         if (!sceneReady) {
           console.warn("model not ready yet");
           return;
@@ -68,22 +67,19 @@
 
         await mv.updateComplete;
 
-        // SceneGraph API で内部ノード一覧を取得
-        const materials = mv.model.materials;
-        const nodes = mv.model.scene.children;
+        const scene = mv.model.scene;
 
-        mv.model.scene.traverse(node => {
-          // 名前が完全一致、または "名前_ランダム文字" でもOKにする
-          if (node.name === targetName || node.name.startsWith(targetName + "_")) {
-            node.traverse(obj => {
-              if (obj.isMesh) {
-                obj.visible = !obj.visible;
-              }
-            });
+        scene.traverse((obj) => {
+          // Mesh だけ対象
+          if (obj.isMesh && 
+              (obj.name === target || obj.name.startsWith(target + "_"))) 
+          {
+            obj.visible = !obj.visible;
           }
         });
       }
     </script>
+
 
 
 
