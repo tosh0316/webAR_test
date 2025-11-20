@@ -50,18 +50,17 @@
       <button onclick="togglePart('drawer')">drawer</button>
       <button onclick="togglePart('front')">front</button>
     </div>
-
+    
     <script>
       async function togglePart(name) {
         const mv = document.querySelector("#mv");
-        await mv.updateComplete;  // モデルロード完了待ち
+        await mv.updateComplete;
 
-        // モデル内の全ノードを取得
         const root = mv.model.scene;
 
         root.traverse(node => {
-          if (node.name === name) {
-            // メッシュを持つ子ノードをすべて反転
+          // ノード名が完全一致 OR node.name が name + ランダム接尾辞 でもOKにする
+          if (node.name === name || node.name.startsWith(name + "_")) {
             node.traverse(obj => {
               if (obj.isMesh) {
                 obj.visible = !obj.visible;
