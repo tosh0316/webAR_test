@@ -52,34 +52,27 @@
     </div>
 
     <script>
-      async function togglePart(name) {
-        const mv = document.querySelector("#mv");
-        await mv.updateComplete;  // モデルロード完了待ち
+      const mv = document.querySelector("#mv");
 
-        // モデル内の全ノードを取得
-        const root = mv.model.scene;
+      // モデル読み込み完了フラグ
+      let sceneReady = false;
 
-        root.traverse(node => {
-          if (node.name === name) {
-            // メッシュを持つ子ノードをすべて反転
-            node.traverse(obj => {
-              if (obj.isMesh) {
-                obj.visible = !obj.visible;
-              }
-            });
-          }
-        });
-      }
-    </script>
-    <script>
+      // model-viewer の model-visibility event で読み込み完了を検知
+      mv.addEventListener('load', () => {
+        sceneReady = true;
+        console.log("model loaded");
+      });
+
       async function togglePart(name) {
-        const mv = document.querySelector("#mv");
+        if (!sceneReady) {
+          console.log("model not ready yet");
+          return;
+        }
+
         await mv.updateComplete;
-
         const root = mv.model.scene;
 
         root.traverse(node => {
-          // ノード名が完全一致 OR node.name が name + ランダム接尾辞 でもOKにする
           if (node.name === name || node.name.startsWith(name + "_")) {
             node.traverse(obj => {
               if (obj.isMesh) {
@@ -90,6 +83,7 @@
         });
       }
     </script>
+
 
   </body>
 </html>
