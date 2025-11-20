@@ -3,29 +3,48 @@
   <head>
     <meta charset="utf-8" />
     <script type="module"
-        src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
     </script>
     <style>
-      body { margin: 0; padding: 0; }
+      body {
+        margin: 0;
+        padding: 0;
+      }
       #controls {
         position: fixed;
-        top: 10px; left: 10px;
-        background: white;
+        top: 10px;
+        left: 10px;
+        background: rgba(255,255,255,0.9);
         padding: 10px;
         border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        z-index: 10;
+      }
+      #controls button {
+        margin: 3px;
+        padding: 5px 10px;
+      }
+      model-viewer {
+        width: 100vw;
+        height: 100vh;
       }
     </style>
   </head>
 
   <body>
+
+    <!-- 🔥 3Dモデル本体 -->
     <model-viewer id="mv"
-                  src="model.glb"
-                  ar
-                  ar-modes="webxr scene-viewer quick-look"
-                  camera-controls
-                  exposure="1.0">
+      src="model.glb"
+      
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      camera-controls
+      exposure="1.0"
+      environment-image="neutral">
     </model-viewer>
 
+    <!-- 🔥 ON/OFFボタン -->
     <div id="controls">
       <button onclick="togglePart('box')">box</button>
       <button onclick="togglePart('drawer')">drawer</button>
@@ -33,13 +52,23 @@
     </div>
 
     <script>
-      function togglePart(name) {
-        const mv = document.getElementById("mv");
-        const part = mv.model.getMaterialByName(name) || mv.model.getNodeByName(name);
-        if (!part) return;
+      async function togglePart(name) {
+        const mv = document.querySelector("#mv");
+        await mv.updateComplete;  // モデルロード完了待ち
 
-        // ノードの可視性切り替え
-        part.visible = !part.visible;
+        // モデル内の全ノードを取得
+        const root = mv.model.scene;
+
+        root.traverse(node => {
+          if (node.name === name) {
+            // メッシュを持つ子ノードをすべて反転
+            node.traverse(obj => {
+              if (obj.isMesh) {
+                obj.visible = !obj.visible;
+              }
+            });
+          }
+        });
       }
     </script>
 
