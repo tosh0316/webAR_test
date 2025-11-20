@@ -55,10 +55,12 @@
       const mv = document.querySelector("#mv");
       let sceneReady = false;
 
-      // 🔥 これが正式に SceneGraph が完全に利用可能になった合図
-      mv.addEventListener("model-visibility", () => {
-        sceneReady = true;
-        console.log("Scene fully ready");
+      // ✅ モデルのシーンが完全に使える状態になった合図
+      mv.addEventListener("model-visibility", (ev) => {
+        if (ev.detail.visible) {
+          sceneReady = true;
+          console.log("Scene fully ready");
+        }
       });
 
       async function togglePart(target) {
@@ -67,10 +69,17 @@
           return;
         }
 
+        // model-viewer 内部の更新完了を待つ
         await mv.updateComplete;
 
-        const scene = mv.model.scene;
+        // scene を安全に取得（なければ諦めてreturn）
+        const scene = (mv.model && mv.model.scene) || mv.scene;
+        if (!scene) {
+          console.warn("Scene object is still missing", mv.model);
+          return;
+        }
 
+        // box / drawer / front と、その *_ランダムID 付きの Mesh を全部トグル
         scene.traverse((obj) => {
           if (
             obj.isMesh &&
@@ -81,6 +90,7 @@
         });
       }
     </script>
+
 
 
 
