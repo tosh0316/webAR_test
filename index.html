@@ -55,30 +55,31 @@
       const mv = document.querySelector("#mv");
       let sceneReady = false;
 
-      mv.addEventListener("load", () => {
+      // 🔥 正式に SceneGraph が揃ったことを保証するイベント
+      mv.addEventListener("model-visibility", () => {
         sceneReady = true;
+        console.log("Scene fully ready");
       });
 
       async function togglePart(target) {
         if (!sceneReady) {
-          console.warn("model not ready yet");
+          console.warn("Scene not ready yet");
           return;
         }
 
         await mv.updateComplete;
 
-        const scene = mv.model.scene;
+        const root = mv.model.scene;
 
-        scene.traverse((obj) => {
-          // Mesh だけ対象
-          if (obj.isMesh && 
-              (obj.name === target || obj.name.startsWith(target + "_"))) 
-          {
+        root.traverse(obj => {
+          if (obj.isMesh &&
+              (obj.name === target || obj.name.startsWith(target + "_"))) {
             obj.visible = !obj.visible;
           }
         });
       }
     </script>
+
 
 
 
