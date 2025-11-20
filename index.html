@@ -55,7 +55,7 @@
       const mv = document.querySelector("#mv");
       let sceneReady = false;
 
-      // 🔥 正式に SceneGraph が揃ったことを保証するイベント
+      // 🔥 これが正式に SceneGraph が完全に利用可能になった合図
       mv.addEventListener("model-visibility", () => {
         sceneReady = true;
         console.log("Scene fully ready");
@@ -69,16 +69,19 @@
 
         await mv.updateComplete;
 
-        const root = mv.model.scene;
+        const scene = mv.model.scene;
 
-        root.traverse(obj => {
-          if (obj.isMesh &&
-              (obj.name === target || obj.name.startsWith(target + "_"))) {
+        scene.traverse((obj) => {
+          if (
+            obj.isMesh &&
+            (obj.name === target || obj.name.startsWith(target + "_"))
+          ) {
             obj.visible = !obj.visible;
           }
         });
       }
     </script>
+
 
 
 
