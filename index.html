@@ -5,46 +5,59 @@
     <script type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
     </script>
+
     <style>
-      body {
-        margin: 0;
-        padding: 0;
+      body { margin: 0; padding: 0; }
+
+      model-viewer {
+        width: 100vw;
+        height: 100vh;
       }
+
+      /* ON/OFF ボタン */
       #controls {
         position: fixed;
         top: 10px;
         left: 10px;
+        z-index: 20;
         background: rgba(255,255,255,0.9);
         padding: 10px;
         border-radius: 10px;
         box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        z-index: 10;
       }
-      #controls button {
-        margin: 3px;
-        padding: 5px 10px;
-      }
-      model-viewer {
-        width: 100vw;
-        height: 100vh;
+
+      /* ← 新しく作る AR ボタン */
+      #ar-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 120px;
+        height: 50px;
+        background: #007aff;
+        color: white;
+        font-size: 18px;
+        text-align: center;
+        line-height: 50px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        z-index: 30;
       }
     </style>
   </head>
 
   <body>
-
-    <!-- 🔥 3Dモデル本体 -->
     <model-viewer id="mv"
       src="model.glb"
       ios-src="model.usdz"
       ar
       ar-modes="quick-look"
       camera-controls
-      environment-image="neutral"
-      style="width:100vw; height:100vh;">
+      environment-image="neutral">
     </model-viewer>
 
-    <!-- 🔥 ON/OFFボタン -->
+    <!-- 自作の AR ボタン -->
+    <div id="ar-button" onclick="launchAR()">ARで見る</div>
+
     <div id="controls">
       <button onclick="togglePart('box')">box</button>
       <button onclick="togglePart('drawer')">drawer</button>
@@ -52,47 +65,37 @@
     </div>
 
     <script>
+      // QuickLook を直接起動する関数
+      function launchAR() {
+        const url = "model.usdz";
+        const a = document.createElement("a");
+        a.setAttribute("rel", "ar");
+        a.setAttribute("href", url);
+        a.click();
+      }
+
       const mv = document.querySelector("#mv");
       let sceneReady = false;
 
-      // glTF の場合、"load" の方が scene 生成後に来る
       mv.addEventListener("load", async () => {
         await mv.updateComplete;
         sceneReady = true;
-        console.log("Scene ready for glTF");
+        console.log("Scene ready");
       });
 
       async function togglePart(target) {
-        if (!sceneReady) {
-          console.warn("Scene not ready yet");
-          return;
-        }
-
+        if (!sceneReady) return;
         await mv.updateComplete;
 
         const scene = mv.model.scene;
-        if (!scene) {
-          console.warn("Scene object missing");
-          return;
-        }
+        if (!scene) return;
 
         scene.traverse(obj => {
-          if (
-            obj.isMesh &&
-            (obj.name === target)
-          ) {
+          if (obj.isMesh && obj.name === target) {
             obj.visible = !obj.visible;
           }
         });
       }
     </script>
-
-
-
-
-
-
-
-
   </body>
 </html>
