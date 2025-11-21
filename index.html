@@ -6,9 +6,6 @@
     <!-- model-viewer -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-    <!-- THREE.js（バウンディングボックス用） -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js"></script>
-
     <style>
       body { margin: 0; }
       model-viewer { width: 100vw; height: 100vh; }
@@ -21,7 +18,6 @@
 
   <body>
 
-    <!-- ▼ 重要：ID を mv に統一 -->
     <model-viewer id="mv"
       src="model.glb"
       camera-controls
@@ -40,28 +36,26 @@
 
 <!-- 自動ホットスポット生成 -->
 <script type="module">
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
-
   const mv = document.querySelector("#mv");
 
   mv.addEventListener("load", async () => {
     await mv.updateComplete;
 
-    const scene = mv.model.scene;
+    // model-viewer内部のTHREEを取得
+    const THREE = mv.constructor.THREE;
 
+    const scene = mv.model.scene;
     console.log("Scene ready. Generating hotspots…");
 
     scene.traverse(obj => {
       if (obj.isMesh && obj.name) {
 
-        // バウンディングボックス
         const box = new THREE.Box3().setFromObject(obj);
         const center = new THREE.Vector3();
         box.getCenter(center);
 
         console.log(`Mesh: ${obj.name} center:`, center);
 
-        // ホットスポット作成
         const btn = document.createElement("button");
         btn.slot = `hotspot-${obj.name}`;
         btn.innerText = obj.name;
@@ -69,7 +63,6 @@
         btn.setAttribute("data-position",
           `${center.x} ${center.y} ${center.z}`
         );
-
         btn.setAttribute("data-normal", "0 0 1");
 
         mv.appendChild(btn);
@@ -79,7 +72,6 @@
 </script>
 
 <script>
-  // Part トグル（必要ならここにロジック追加）
   function togglePart(name) {
     const mv = document.querySelector("#mv");
     const obj = mv.model && mv.model.getObjectByName(name);
