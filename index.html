@@ -48,7 +48,7 @@
   <body>
     <model-viewer id="mv"
       src="model.glb"
-      ios-src="Untitled.usdc"
+      ios-src="model.usdz"
       ar
       ar-modes="quick-look"
       camera-controls
@@ -67,7 +67,7 @@
     <script>
       // QuickLook を直接起動する関数
       function launchAR() {
-        const url = "Untitled.usdc";
+        const url = "model.usdz";
         const a = document.createElement("a");
         a.setAttribute("rel", "ar");
         a.setAttribute("href", url);
