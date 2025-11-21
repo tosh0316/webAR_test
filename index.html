@@ -2,78 +2,35 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <script type="module"
-      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-    </script>
+
+    <!-- model-viewer -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+    <!-- THREE.js（バウンディングボックス用） -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js"></script>
 
     <style>
       body { margin: 0; }
-
-      model-viewer {
-        width: 100vw;
-        height: 100vh;
-      }
-
+      model-viewer { width: 100vw; height: 100vh; }
       #controls {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        background: white;
-        padding: 10px;
-        border-radius: 10px;
-        z-index: 20;
-      }
-
-      #infoPanel {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: rgba(255,255,255,0.95);
-        border-top: 2px solid #ccc;
-        padding: 15px;
-        font-size: 16px;
-        display: none;
-        z-index: 30;
-      }
-
-      #infoPanelClose {
-        float: right;
-        cursor: pointer;
-        font-size: 20px;
+        position: fixed; top: 10px; left: 10px;
+        background: white; padding: 10px; border-radius: 10px; z-index: 20;
       }
     </style>
   </head>
 
   <body>
+
+    <!-- ▼ 重要：ID を mv に統一 -->
     <model-viewer id="mv"
       src="model.glb"
       camera-controls
-      environment-image="neutral"
       ar
+      environment-image="neutral"
       style="width:100vw; height:100vh;"
     >
-
-      <!-- ★ ホットスポット（部品説明用） -->
-      <button slot="hotspot-1"
-        data-position="0.3 0.4 0.2"
-        data-normal="0 1 0"
-        class="hotspot"
-        data-part="drawer">
-        ①
-      </button>
-
-      <button slot="hotspot-2"
-        data-position="-0.3 0.4 0.2"
-        data-normal="0 1 0"
-        class="hotspot"
-        data-part="front">
-        ②
-      </button>
-
     </model-viewer>
 
-    <!-- パーツON/OFF -->
     <div id="controls">
       <div>Parts:</div>
       <button onclick="togglePart('box')">box</button>
@@ -81,50 +38,55 @@
       <button onclick="togglePart('front')">front</button>
     </div>
 
-    <!-- 説明パネル -->
-    <div id="infoPanel">
-      <span id="infoPanelClose" onclick="closeInfo()">✕</span>
-      <div id="infoContent"></div>
-    </div>
+<!-- 自動ホットスポット生成 -->
+<script type="module">
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
 
-    <script>
-      const mv = document.querySelector("#mvModel");
+  const mv = document.querySelector("#mv");
 
-      mv.addEventListener("load", async () => {
-        await mv.updateComplete;
+  mv.addEventListener("load", async () => {
+    await mv.updateComplete;
 
-        const scene = mv.model.scene;
+    const scene = mv.model.scene;
 
-        // Scene内のすべてのオブジェクトを走査
-        scene.traverse(obj => {
-          if (obj.isMesh && obj.name) {
+    console.log("Scene ready. Generating hotspots…");
 
-            // バウンディングボックスを作成
-            const box = new THREE.Box3().setFromObject(obj);
-            const center = new THREE.Vector3();
-            box.getCenter(center);
+    scene.traverse(obj => {
+      if (obj.isMesh && obj.name) {
 
-            console.log("hotspot for:", obj.name, center);
+        // バウンディングボックス
+        const box = new THREE.Box3().setFromObject(obj);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
 
-            // ホットスポットボタンを生成
-            const btn = document.createElement("button");
-            btn.slot = `hotspot-${obj.name}`;
-            btn.innerText = obj.name;
+        console.log(`Mesh: ${obj.name} center:`, center);
 
-            // data-position に座標をセット
-            btn.setAttribute(
-              "data-position",
-              `${center.x} ${center.y} ${center.z}`
-            );
+        // ホットスポット作成
+        const btn = document.createElement("button");
+        btn.slot = `hotspot-${obj.name}`;
+        btn.innerText = obj.name;
 
-            // 適当に少し前に出す
-            btn.setAttribute("data-normal", "0 0 1");
+        btn.setAttribute("data-position",
+          `${center.x} ${center.y} ${center.z}`
+        );
 
-            mv.appendChild(btn);
-          }
-        });
-      });
-    </script>
+        btn.setAttribute("data-normal", "0 0 1");
+
+        mv.appendChild(btn);
+      }
+    });
+  });
+</script>
+
+<script>
+  // Part トグル（必要ならここにロジック追加）
+  function togglePart(name) {
+    const mv = document.querySelector("#mv");
+    const obj = mv.model && mv.model.getObjectByName(name);
+    if (!obj) return;
+    obj.visible = !obj.visible;
+  }
+</script>
 
   </body>
 </html>
