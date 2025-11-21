@@ -88,53 +88,40 @@
     </div>
 
     <script>
-      const mv = document.querySelector("#mv");
-      let sceneReady = false;
+      const mv = document.querySelector("#mvModel");
 
       mv.addEventListener("load", async () => {
         await mv.updateComplete;
-        sceneReady = true;
-      });
-
-      // ---- パーツ切り替え ----
-      async function togglePart(target) {
-        if (!sceneReady) return;
-        await mv.updateComplete;
 
         const scene = mv.model.scene;
-        if (!scene) return;
 
+        // Scene内のすべてのオブジェクトを走査
         scene.traverse(obj => {
-          if (obj.isMesh && obj.name === target) {
-            obj.visible = !obj.visible;
+          if (obj.isMesh && obj.name) {
+
+            // バウンディングボックスを作成
+            const box = new THREE.Box3().setFromObject(obj);
+            const center = new THREE.Vector3();
+            box.getCenter(center);
+
+            console.log("hotspot for:", obj.name, center);
+
+            // ホットスポットボタンを生成
+            const btn = document.createElement("button");
+            btn.slot = `hotspot-${obj.name}`;
+            btn.innerText = obj.name;
+
+            // data-position に座標をセット
+            btn.setAttribute(
+              "data-position",
+              `${center.x} ${center.y} ${center.z}`
+            );
+
+            // 適当に少し前に出す
+            btn.setAttribute("data-normal", "0 0 1");
+
+            mv.appendChild(btn);
           }
-        });
-      }
-
-      // ---- ホットスポット押したら説明を出す ----
-      const descriptions = {
-        drawer: "引き出しの前板。ネジは4×25mmを使用します。",
-        front: "前面板です。上下方向に注意してください。"
-      };
-
-      document.querySelectorAll(".hotspot").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const part = btn.dataset.part;
-          document.getElementById("infoContent").innerText = descriptions[part];
-          document.getElementById("infoPanel").style.display = "block";
-        });
-      });
-
-      function closeInfo() {
-        document.getElementById("infoPanel").style.display = "none";
-      }
-
-      mv.addEventListener("load", async () => {
-        await mv.updateComplete;
-
-        const scene = mv.model.scene;
-        scene.traverse(obj => {
-          console.log(obj.name, obj.position);
         });
       });
     </script>
