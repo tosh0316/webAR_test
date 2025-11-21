@@ -55,12 +55,11 @@
       const mv = document.querySelector("#mv");
       let sceneReady = false;
 
-      // ✅ モデルのシーンが完全に使える状態になった合図
-      mv.addEventListener("model-visibility", (ev) => {
-        if (ev.detail.visible) {
-          sceneReady = true;
-          console.log("Scene fully ready");
-        }
+      // glTF の場合、"load" の方が scene 生成後に来る
+      mv.addEventListener("load", async () => {
+        await mv.updateComplete;
+        sceneReady = true;
+        console.log("Scene ready for glTF");
       });
 
       async function togglePart(target) {
@@ -69,27 +68,25 @@
           return;
         }
 
-        // model-viewer 内部の更新完了を待つ
         await mv.updateComplete;
 
-        // scene を安全に取得（なければ諦めてreturn）
-        const scene = (mv.model && mv.model.scene) || mv.scene;
+        const scene = mv.model.scene;
         if (!scene) {
-          console.warn("Scene object is still missing", mv.model);
+          console.warn("Scene object missing");
           return;
         }
 
-        // box / drawer / front と、その *_ランダムID 付きの Mesh を全部トグル
-        scene.traverse((obj) => {
+        scene.traverse(obj => {
           if (
             obj.isMesh &&
-            (obj.name === target || obj.name.startsWith(target + "_"))
+            (obj.name === target)
           ) {
             obj.visible = !obj.visible;
           }
         });
       }
     </script>
+
 
 
 
